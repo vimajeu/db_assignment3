@@ -104,3 +104,30 @@ after insert on orders
 for each row
 execute function
 add_to_log();
+
+
+
+--task 6
+insert into customers (full_name, email, balance)
+values ('John Pork', 'john.pork@example.com', 100); --creates a customer
+
+insert into products (product_name, price, stock_quantity)
+values ('Apple', 5, 70); --creates a product
+
+call create_order(3); --creates an order
+
+select *
+from order_log 
+where log_id = 1; --shows that a created orded is added to the log
+
+select calculate_order_total(3); --returns 500 here (before adding a product)
+select stock_quantity
+from products
+where product_id = 2; --returns 98 (before adding a product to an order)
+
+call add_product_to_order(3, 2, 8);
+
+select calculate_order_total(3); --returns 700 here (after adding a product)
+select stock_quantity
+from products
+where product_id = 2; --returns 90 (after adding a product to an order)
