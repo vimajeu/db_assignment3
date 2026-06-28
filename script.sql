@@ -55,3 +55,52 @@ begin
 	where product_id = p_product_id;
 end;
 $$;
+
+
+--task 4
+create or replace function order_items_change()
+returns trigger
+as $$
+declare
+	v_order_id int;
+begin
+	if (tg_op = 'delete') then 
+		v_order_id := old.order_id;
+	else
+		v_order_id := new.order_id;
+	end if;
+
+	update orders
+	set total_amount = calculate_order_total(v_order_id)
+	where order_id = v_order_id;
+	
+	return null;
+end;
+$$ language plpgsql;
+
+
+create trigger order_items_change_tr
+after insert or update or delete
+on order_items
+for each row 
+execute function
+order_items_change();
+
+
+--task 5
+create or replace function add_to_log()
+returns trigger
+as $$
+begin
+	insert into order_log (order_id, customer_id, action, log_date)
+	values (new.order_id, new.customer_id, 'order created', new.order_date);
+	
+	return null;
+end;
+$$ language plpgsql;
+
+create trigger add_to_log_tr
+after insert on orders
+for each row
+execute function
+add_to_log();
